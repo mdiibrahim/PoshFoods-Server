@@ -17,7 +17,11 @@ const getAllProductsFromDB = async (searchTerm?: string) => {
   if (!query) {
     throw new Error('Product not found');
   }
-  return await Product.find(query, { _id: 0 });
+  const products = await Product.find(query, { _id: 0 });
+  if (!products.length) {
+    throw new Error('Product not found');
+  }
+  return products;
 };
 
 const getSingleProductFromDB = async (id: string) => {
