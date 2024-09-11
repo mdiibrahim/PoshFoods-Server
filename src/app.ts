@@ -20,7 +20,7 @@ app.use(globalErrorHandler);
 
 //root route
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello poshturf-server!');
+  res.send('Hello PoshFoods-server!');
 });
 
 //not found route
