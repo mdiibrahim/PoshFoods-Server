@@ -68,11 +68,27 @@ const cancelOrder = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
+const updateOrderStatusToDelivered = catchAsync(
+  async (req: Request, res: Response) => {
+    const { productId } = req.params;
+    const { status } = req.body;
+    const result = await OrderServices.updateOrderStatusToDeliveredToDB(
+      productId,
+      status,
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Order delivered successfully',
+      data: result,
+    });
+  },
+);
 export const OrderController = {
   createOrder,
   getAllOrders,
   getAUserOrders,
   getAUserSingleOrder,
   cancelOrder,
+  updateOrderStatusToDelivered,
 };

@@ -15,5 +15,6 @@ router.post(
 router.get('/user', auth('user'), OrderController.getAUserOrders);
 router.delete('/:id', auth('user'), OrderController.cancelOrder);
 router.get('/:id', auth('user'), OrderController.getAUserSingleOrder);
+router.put('/:id', auth('admin'), OrderController.updateOrderStatusToDelivered);
 
 export const OrderRoutes = router;

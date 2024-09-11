@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
+/* eslint-disable no-console */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { initiatePayment, verifyPayment } from './payment.utils';
@@ -22,7 +22,8 @@ const initiatePaymentToDB = async (paymentData: any) => {
       );
     }
     return result.payment_url;
-  } catch (error) {
+  } catch (error: any) {
+    console.error(`Payment initiation failed: ${error.message}`, error);
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,
       'Payment initiation failed.',
@@ -31,30 +32,33 @@ const initiatePaymentToDB = async (paymentData: any) => {
 };
 
 const confirmationService = async (transactionId: string) => {
-  const verifyResponse = await verifyPayment(transactionId);
-  let message = '';
+  try {
+    const verifyResponse = await verifyPayment(transactionId);
+    let message = '';
 
-  if (verifyResponse.pay_status === 'Successful') {
-    await Order.findOneAndUpdate(
-      { transactionId },
-      {
-        paymentStatus: 'paid',
-        isBooked: 'confirmed',
-      },
-    );
-    message = 'Successfully Paid!';
-  } else {
-    message = 'Payment Failed!';
+    if (verifyResponse.pay_status === 'Successful') {
+      await Order.findOneAndUpdate(
+        { transactionId },
+        {
+          isOrdered: 'confirmed',
+        },
+      );
+      message = 'Successfully Paid!';
+    } else {
+      message = 'Payment Failed!';
+    }
+    return message;
+  } catch (error: any) {
+    console.error(`Payment confirmation failed: ${error.message}`, error);
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Payment failed.');
   }
-
-  return message;
 };
 
 const failedService = async (transactionId: string) => {
   const updatedOrder = await Order.findOneAndUpdate(
     { transactionId },
     {
-      isBooked: 'pending',
+      isOrdered: 'pending',
     },
     { new: true },
   );

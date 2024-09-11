@@ -6,34 +6,38 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 
 const createOrderInDB = async (order: IOrder) => {
-  // Find the ordered product in the database
   const orderedProduct = await Product.findOne(order.product);
   if (!orderedProduct) {
     throw new Error('Product not found');
   }
 
-  // Check if the ordered quantity greater than the available product quantity
   if (order.quantity > orderedProduct?.inventory?.quantity) {
     throw new Error('Insufficient quantity available in inventory');
   }
 
   const newQuantity = orderedProduct.inventory.quantity - order.quantity;
-  // If the new quantity is zero, inStock will false
-  if (newQuantity == 0) {
+  if (newQuantity === 0) {
     await Product.updateOne(
       { _id: order.product },
       { 'inventory.inStock': false },
     );
   }
+
+  // Add delivery charge
+  const deliveryCharge = 60;
+  const totalPrice = order.price * order.quantity + deliveryCharge;
+
   await Product.updateOne(
     { _id: order.product },
     { 'inventory.quantity': newQuantity },
   );
-  const createdOrder = await Order.create(order);
 
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-  const { _id, ...result } = createdOrder.toObject();
-  return result;
+  const createdOrder = await Order.create({
+    ...order,
+    totalPrice,
+  });
+
+  return createdOrder;
 };
 
 const getAllOrdersFromDB = async (email?: string | undefined) => {
@@ -74,7 +78,7 @@ const cancelOrderFromDB = async (id: string) => {
   const result = await Order.findByIdAndUpdate(
     id,
     {
-      isBooked: 'cancelled',
+      isOrdered: 'cancelled',
     },
     {
       new: true,
@@ -82,10 +86,23 @@ const cancelOrderFromDB = async (id: string) => {
   ).populate('product');
   return result;
 };
+const updateOrderStatusToDeliveredToDB = async (id: string, status: string) => {
+  const result = await Order.findByIdAndUpdate(
+    id,
+    { isOrdered: status },
+    { new: true },
+  ).populate('product');
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Order not found');
+  }
+  return result;
+};
+
 export const OrderServices = {
   createOrderInDB,
   getAllOrdersFromDB,
   getAUserOrdersFromDB,
   getAUserSingleOrderFromDB,
   cancelOrderFromDB,
+  updateOrderStatusToDeliveredToDB,
 };

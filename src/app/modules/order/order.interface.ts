@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 
-export type IIsOrdered = 'confirmed' | 'pending' | 'cancelled';
+export type IIsOrdered = 'confirmed' | 'pending' | 'cancelled' | 'delivered';
 
 export interface IOrder {
   email: string;
