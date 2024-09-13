@@ -1,24 +1,23 @@
 import { Model } from 'mongoose';
-export interface IVariant {
-  type: string;
-  value: string;
-}
-export interface IInventory {
-  quantity: number;
-  inStock: boolean;
-}
+const CATEGORIES = ['Fruits', 'Vegetables', 'Dairy', 'Bakery', 'Meat'] as const;
 export interface IProduct {
   title: string;
   description: string;
   price: number;
-  category: string;
+  category: typeof CATEGORIES;
   tags: string[];
-  variants: IVariant[];
-  inventory: IInventory;
+  quantity: number;
+  inStock: boolean;
+  isPopular?: boolean;
+  isFlashSale?: boolean;
   isDeleted?: boolean;
+  image: string;
+  additionalImages?: string[];
+  features?: string[];
+  longDescription?: string;
 }
 
 export interface IProductModel extends Model<IProduct> {
   // eslint-disable-next-line no-unused-vars
-  isProductExists(name: string): Promise<IProduct | null>;
+  isProductExists(title: string): Promise<IProduct | null>;
 }

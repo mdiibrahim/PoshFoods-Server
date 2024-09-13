@@ -1,71 +1,88 @@
 import { model, Schema } from 'mongoose';
-import {
-  IInventory,
-  IProduct,
-  IProductModel,
-  IVariant,
-} from './product.interface';
+import { IProduct, IProductModel } from './product.interface';
 
-const variantsSchema = new Schema<IVariant>(
-  {
-    type: { type: String, required: true },
-    value: { type: String, required: true },
-  },
-  { _id: false },
-);
-
-const inventorySchema = new Schema<IInventory>(
-  {
-    quantity: { type: Number, required: true },
-    inStock: { type: Boolean, required: true },
-  },
-  { _id: false },
-);
+// Fixed grocery categories
+const CATEGORIES = ['Fruits', 'Vegetables', 'Dairy', 'Bakery', 'Meat'] as const;
 
 const productSchema = new Schema<IProduct>(
   {
     title: {
       type: String,
-      required: true,
-      unique: true,
+      required: [true, 'Product title is required.'],
       trim: true,
     },
     description: {
       type: String,
-      required: true,
+      required: [true, 'Product description is required.'],
       trim: true,
     },
     price: {
       type: Number,
-      required: true,
+      required: [true, 'Product price is required.'],
+      min: [0, 'Price must be a positive number.'],
     },
     category: {
       type: String,
-      required: true,
+      enum: {
+        values: CATEGORIES,
+        message:
+          'Category must be one of the following: Fruits, Vegetables, Dairy, Bakery, Meat, Seafood, Beverages, Snacks.',
+      },
+      required: [true, 'Product category is required.'],
     },
     tags: {
       type: [String],
-      required: true,
+      default: [],
     },
-    variants: {
-      type: [variantsSchema],
-      required: true,
+    quantity: {
+      type: Number,
+      required: [true, 'Product quantity is required.'],
+      min: [0, 'Quantity must be a positive number.'],
     },
-    inventory: {
-      type: inventorySchema,
-      required: true,
+    inStock: {
+      type: Boolean,
+      default: true,
+    },
+    isPopular: {
+      type: Boolean,
+      default: false,
+    },
+    isFlashSale: {
+      type: Boolean,
+      default: false,
     },
     isDeleted: {
       type: Boolean,
       default: false,
     },
+    image: {
+      type: String,
+      required: [true, 'Product image URL is required.'],
+      trim: true,
+    },
+    additionalImages: {
+      type: [String], // Array of image URLs
+      validate: {
+        validator: (arr: string[]) =>
+          arr.every((url) => /^https?:\/\//.test(url)),
+        message: 'Each additional image URL must be valid.',
+      },
+      required: false,
+    },
+    features: {
+      type: [String],
+      default: [],
+    },
+    longDescription: {
+      type: String,
+      required: false,
+    },
   },
   {
-    versionKey: false,
     timestamps: true,
+    versionKey: false,
   },
 );
-
 productSchema.index({
   title: 'text',
   description: 'text',

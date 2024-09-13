@@ -4,40 +4,44 @@ import { IOrder } from './order.interface';
 import { Order } from './order.model';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
+import { User } from '../user/user.model';
 
-const createOrderInDB = async (order: IOrder) => {
-  const orderedProduct = await Product.findOne(order.product);
-  if (!orderedProduct) {
-    throw new Error('Product not found');
+const createOrderInDB = async (orderData: IOrder, payload: JwtPayload) => {
+  const { products, totalPrice } = orderData;
+  const user = await User.isUserExists(payload.email);
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  // Check if products exist and update inventory
+  for (const item of products) {
+    const product = await Product.findById(item.productId);
+    if (!product) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
+    }
+
+    // Check stock
+    if (item.quantity > product.quantity) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Insufficient stock');
+    }
+
+    // Update inventory
+    const newQuantity = product.quantity - item.quantity;
+    product.quantity = newQuantity;
+    if (newQuantity === 0) {
+      product.inStock = false;
+    }
+    await product.save();
   }
 
-  if (order.quantity > orderedProduct?.inventory?.quantity) {
-    throw new Error('Insufficient quantity available in inventory');
-  }
-
-  const newQuantity = orderedProduct.inventory.quantity - order.quantity;
-  if (newQuantity === 0) {
-    await Product.updateOne(
-      { _id: order.product },
-      { 'inventory.inStock': false },
-    );
-  }
-
-  // Add delivery charge
-  const deliveryCharge = 60;
-  const totalPrice = order.price * order.quantity + deliveryCharge;
-
-  await Product.updateOne(
-    { _id: order.product },
-    { 'inventory.quantity': newQuantity },
-  );
-
-  const createdOrder = await Order.create({
-    ...order,
+  // Create the order
+  const order = await Order.create({
+    products,
     totalPrice,
+    user: user._id,
+    isOrdered: 'pending',
   });
 
-  return createdOrder;
+  return order;
 };
 
 const getAllOrdersFromDB = async (email?: string | undefined) => {

@@ -18,13 +18,30 @@ const createProduct = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllProducts = catchAsync(async (req: Request, res: Response) => {
-  const { searchTerm } = req.query;
+  const { searchTerm, category, isFlashSale, isPopular } = req.query;
+
+  // Construct the message
   const message = searchTerm
     ? `Products matching search term '${searchTerm}' fetched successfully!`
     : 'Products fetched successfully!';
 
-  // Retrieve All products or Retrieve Orders by searching
-  const filter = searchTerm ? (searchTerm as string) : undefined;
+  // Build the filter object
+  const filter: Record<string, any> = {};
+
+  if (searchTerm) {
+    filter.$text = { $search: searchTerm };
+  }
+  if (category) {
+    filter.category = category;
+  }
+  if (isFlashSale !== undefined) {
+    filter.isFlashSale = isFlashSale === 'true'; // Convert to boolean
+  }
+  if (isPopular !== undefined) {
+    filter.isPopular = isPopular === 'true'; // Convert to boolean
+  }
+
+  // Retrieve products based on the filter
   const result = await ProductServices.getAllProductsFromDB(filter);
   sendResponse(res, {
     success: true,

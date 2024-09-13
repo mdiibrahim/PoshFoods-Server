@@ -12,12 +12,8 @@ const createProductInDB = async (product: IProduct) => {
   return result;
 };
 
-const getAllProductsFromDB = async (searchTerm?: string) => {
-  const query = searchTerm ? { $text: { $search: searchTerm } } : {};
-  if (!query) {
-    throw new Error('Product not found');
-  }
-  const products = await Product.find(query, { _id: 0 });
+const getAllProductsFromDB = async (filter: Record<string, any>) => {
+  const products = await Product.find(filter);
   if (!products.length) {
     throw new Error('Product not found');
   }
@@ -25,7 +21,7 @@ const getAllProductsFromDB = async (searchTerm?: string) => {
 };
 
 const getSingleProductFromDB = async (id: string) => {
-  const product = await Product.findById(id, { _id: 0 });
+  const product = await Product.findById(id);
   if (!product) {
     throw new Error('Product not found');
   }
@@ -55,11 +51,6 @@ const updateProductInDB = async (
 
   // Merge existing product data with new data
   Object.assign(updatedProduct, productData);
-
-  // check arrays like 'variants'
-  if (productData.variants) {
-    updatedProduct.variants = productData.variants;
-  }
 
   await updatedProduct.save();
 

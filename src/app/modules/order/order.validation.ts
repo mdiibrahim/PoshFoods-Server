@@ -8,10 +8,14 @@ const objectIdValidationSchema = z
   });
 
 const orderValidationSchema = z.object({
-  email: z.string().email(),
-  productId: objectIdValidationSchema,
-  price: z.number().positive(),
-  quantity: z.number().int().positive(),
+  products: z.array(
+    z.object({
+      productId: objectIdValidationSchema,
+      quantity: z.number().positive().int(),
+      price: z.number().positive(),
+    }),
+  ),
+  totalPrice: z.number().positive(),
 });
 
 export const OrderValidation = {

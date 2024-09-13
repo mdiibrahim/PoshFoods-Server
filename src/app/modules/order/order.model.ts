@@ -4,25 +4,21 @@ import { isOrdered } from './order.constant';
 
 export const orderSchema = new Schema<IOrder>(
   {
-    email: { type: String, required: true },
-    product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-    price: { type: Number, required: true },
-    quantity: { type: Number, required: true },
-    transactionId: {
-      type: String,
-      required: false,
-    },
-
-    isOrdered: {
-      type: String,
-      enum: isOrdered,
-      default: 'pending',
-    },
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
+    products: [
+      {
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true,
+        },
+        quantity: { type: Number, required: true },
+        price: { type: Number, required: true },
+        _id: 0,
+      },
+    ],
+    totalPrice: { type: Number, required: true },
+    isOrdered: { type: String, enum: isOrdered, default: 'pending' },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   {
     versionKey: false,

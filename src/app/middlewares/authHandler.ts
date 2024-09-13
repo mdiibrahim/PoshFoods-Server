@@ -9,36 +9,46 @@ import { IRole } from '../modules/user/user.interface';
 
 const auth = (...requiredRoles: IRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization;
-    if (!token) {
-      throw new AppError(
-        httpStatus.UNAUTHORIZED,
-        'You have no access to this route',
-      );
+    // Extract the authorization header
+    const authHeader = req.headers.authorization;
+
+    // Check if the authorization header exists and is properly formatted
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new AppError(httpStatus.UNAUTHORIZED, 'No access token provided');
     }
 
-    const decoded = jwt.verify(
-      token,
-      config.jwt_access_secret as string,
-    ) as JwtPayload;
+    // Get the token after 'Bearer '
+    const token = authHeader.split(' ')[1];
 
-    const { role, email } = decoded;
+    try {
+      // Verify the token
+      const decoded = jwt.verify(
+        token,
+        config.jwt_access_secret as string,
+      ) as JwtPayload;
+      const { role, email } = decoded;
 
-    const user = await User.isUserExists(email);
+      // Find the user by their email
+      const user = await User.isUserExists(email);
+      if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+      }
 
-    if (!user) {
-      throw new AppError(httpStatus.NOT_FOUND, 'No Data Found !');
+      // Check if the user's role is one of the required roles
+      if (requiredRoles.length && !requiredRoles.includes(role)) {
+        throw new AppError(
+          httpStatus.FORBIDDEN,
+          'Insufficient permissions to access this route',
+        );
+      }
+
+      // Attach user info to the request object
+      req.user = decoded as JwtPayload;
+      next(); // Call the next middleware
+    } catch (error) {
+      // If token verification fails
+      throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid or expired token');
     }
-
-    if (requiredRoles && !requiredRoles.includes(role)) {
-      throw new AppError(
-        httpStatus.UNAUTHORIZED,
-        'You have no access to this route',
-      );
-    }
-
-    req.user = decoded as JwtPayload;
-    next();
   });
 };
 

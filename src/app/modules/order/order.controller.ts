@@ -8,16 +8,11 @@ import httpStatus from 'http-status';
 //creating order
 const createOrder = catchAsync(async (req: Request, res: Response) => {
   const order = req.body;
-
-  const result = await OrderServices.createOrderInDB(order);
+  const user = req.user;
+  const result = await OrderServices.createOrderInDB(order, user);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Order created successfully!',
-    data: result,
-  });
-  res.status(200).json({
-    success: true,
     message: 'Order created successfully!',
     data: result,
   });
