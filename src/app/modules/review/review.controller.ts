@@ -38,9 +38,19 @@ const getAllProductsReviews = catchAsync(
     });
   },
 );
+const getAUserReviews = catchAsync(async (req: Request, res: Response) => {
+  const result = await ReviewServices.getAUserReviewsFromDB(req.user);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Orders retrieved successfully',
+    data: result,
+  });
+});
 
 export const ReviewControllers = {
   getAProductReviews,
   createReview,
   getAllProductsReviews,
+  getAUserReviews,
 };

@@ -1,7 +1,7 @@
+// src/product/product.model.ts
 import { model, Schema } from 'mongoose';
 import { IProduct, IProductModel } from './product.interface';
 
-// Fixed grocery categories
 const CATEGORIES = ['Fruits', 'Vegetables', 'Dairy', 'Bakery', 'Meat'] as const;
 
 const productSchema = new Schema<IProduct>(
@@ -26,7 +26,7 @@ const productSchema = new Schema<IProduct>(
       enum: {
         values: CATEGORIES,
         message:
-          'Category must be one of the following: Fruits, Vegetables, Dairy, Bakery, Meat, Seafood, Beverages, Snacks.',
+          'Category must be one of the following: Fruits, Vegetables, Dairy, Bakery, Meat.',
       },
       required: [true, 'Product category is required.'],
     },
@@ -53,7 +53,7 @@ const productSchema = new Schema<IProduct>(
     },
     isDeleted: {
       type: Boolean,
-      default: false,
+      default: false, // This field is now included in the schema
     },
     image: {
       type: String,
@@ -61,7 +61,7 @@ const productSchema = new Schema<IProduct>(
       trim: true,
     },
     additionalImages: {
-      type: [String], // Array of image URLs
+      type: [String],
       validate: {
         validator: (arr: string[]) =>
           arr.every((url) => /^https?:\/\//.test(url)),
@@ -83,6 +83,8 @@ const productSchema = new Schema<IProduct>(
     versionKey: false,
   },
 );
+
+// Add indexing for search optimization
 productSchema.index({
   title: 'text',
   description: 'text',
@@ -90,10 +92,13 @@ productSchema.index({
   tags: 'text',
 });
 
-// static method for checking duplicate name in the database.
-productSchema.statics.isProductExists = async function (title: string) {
-  const existingProduct = await this.findOne({ title });
-  return existingProduct;
-};
+// Static method to check if a product already exists
+productSchema.pre('find', function () {
+  this.where({ isDeleted: false });
+});
+
+productSchema.pre('findOne', function () {
+  this.where({ isDeleted: false });
+});
 
 export const Product = model<IProduct, IProductModel>('Product', productSchema);

@@ -44,9 +44,20 @@ const getAllProductsReviewsFromDB = async () => {
 
   return result;
 };
+const getAUserReviewsFromDB = async (payload: JwtPayload) => {
+  const { _id } = payload;
+  const result = await Review.find({ user: _id })
+    .populate('product')
+    .populate('user');
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, 'No Data Found');
+  }
 
+  return result;
+};
 export const ReviewServices = {
   createReviewInDB,
   getAproductReviewsFromDB,
   getAllProductsReviewsFromDB,
+  getAUserReviewsFromDB,
 };

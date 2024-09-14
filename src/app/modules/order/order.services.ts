@@ -46,8 +46,8 @@ const createOrderInDB = async (orderData: IOrder, payload: JwtPayload) => {
 
 const getAllOrdersFromDB = async (email?: string | undefined) => {
   const result = email
-    ? await Order.find({ email }, { _id: 0 }) // Retrieve All Orders
-    : await Order.find({}, { _id: 0 }); // or Retrieve Orders by User Email
+    ? await Order.find({ email }) // Retrieve All Orders
+    : await Order.find({}); // or Retrieve Orders by User Email
   if (result.length === 0) {
     throw new Error(
       email ? 'Orders not found for the provided email' : 'Orders not found',
@@ -59,7 +59,7 @@ const getAllOrdersFromDB = async (email?: string | undefined) => {
 const getAUserOrdersFromDB = async (payload: JwtPayload) => {
   const { _id } = payload;
   const result = await Order.find({ user: _id })
-    .populate('product')
+    .populate('products.productId')
     .populate('user');
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, 'No Data Found');
@@ -95,10 +95,13 @@ const updateOrderStatusToDeliveredToDB = async (id: string, status: string) => {
     id,
     { isOrdered: status },
     { new: true },
-  ).populate('product');
+  )
+    .populate('products.productId')
+    .populate('user');
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, 'Order not found');
   }
+
   return result;
 };
 

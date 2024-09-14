@@ -65,10 +65,10 @@ const cancelOrder = catchAsync(async (req: Request, res: Response) => {
 });
 const updateOrderStatusToDelivered = catchAsync(
   async (req: Request, res: Response) => {
-    const { productId } = req.params;
+    const { id } = req.params;
     const { status } = req.body;
     const result = await OrderServices.updateOrderStatusToDeliveredToDB(
-      productId,
+      id,
       status,
     );
     sendResponse(res, {

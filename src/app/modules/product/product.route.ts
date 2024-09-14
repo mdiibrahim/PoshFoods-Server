@@ -12,17 +12,13 @@ router.post(
   validateRequest(ProductValidation.productValidationSchema),
   ProductController.createProduct,
 );
-router.get('/:productId', ProductController.getSingleProduct);
+router.get('/:id', ProductController.getSingleProduct);
 router.put(
-  '/:productId',
+  '/:id',
   auth('admin'),
   validateRequest(ProductValidation.productValidationSchema),
   ProductController.updateProduct,
 );
-router.delete(
-  '/:productId',
-  auth('admin'),
-  ProductController.deleteSingleProduct,
-);
+router.delete('/:id', auth('admin'), ProductController.deleteSingleProduct);
 
 export const ProductRoutes = router;

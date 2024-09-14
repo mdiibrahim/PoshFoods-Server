@@ -52,8 +52,8 @@ const getAllProducts = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getSingleProduct = catchAsync(async (req: Request, res: Response) => {
-  const { productId } = req.params;
-  const result = await ProductServices.getSingleProductFromDB(productId);
+  const { id } = req.params;
+  const result = await ProductServices.getSingleProductFromDB(id);
 
   sendResponse(res, {
     success: true,
@@ -64,8 +64,8 @@ const getSingleProduct = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteSingleProduct = catchAsync(async (req: Request, res: Response) => {
-  const { productId } = req.params;
-  const result = await ProductServices.deleteSingleProductFromDB(productId);
+  const { id } = req.params;
+  const result = await ProductServices.deleteSingleProductFromDB(id);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
@@ -75,12 +75,9 @@ const deleteSingleProduct = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateProduct = catchAsync(async (req: Request, res: Response) => {
-  const { productId } = req.params;
+  const { id } = req.params;
   const productData = req.body;
-  const result = await ProductServices.updateProductInDB(
-    productId,
-    productData,
-  );
+  const result = await ProductServices.updateProductInDB(id, productData);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,

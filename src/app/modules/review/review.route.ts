@@ -15,4 +15,5 @@ router.post(
   ReviewControllers.createReview,
 );
 router.get('/:id', ReviewControllers.getAProductReviews);
+router.get('/user', auth('user'), ReviewControllers.getAUserReviews);
 export const ReviewRoutes = router;
