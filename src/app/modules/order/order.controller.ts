@@ -19,17 +19,12 @@ const createOrder = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllOrders = catchAsync(async (req: Request, res: Response) => {
-  const { email } = req.query;
-  // Retrieve All Orders or Retrieve Orders by User Email
-  const filter = email ? (email as string) : undefined;
-  const result = await OrderServices.getAllOrdersFromDB(filter);
-  const message = email
-    ? 'Orders fetched successfully for user email!'
-    : 'Orders fetched successfully!';
+  const result = await OrderServices.getAllOrdersFromDB();
+
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message,
+    message: 'Orders retrieved successfully',
     data: result,
   });
 });

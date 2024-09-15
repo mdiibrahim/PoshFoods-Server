@@ -1,6 +1,5 @@
 import { z } from 'zod';
-
-const CATEGORIES = ['Fruits', 'Vegetables', 'Dairy', 'Bakery', 'Meat'] as const;
+const CATEGORIES = ['Fruits', 'Vegetables', 'Dessert', 'Meat'] as const;
 
 export const productValidationSchema = z.object({
   title: z.string().min(1, 'Product title is required.'),

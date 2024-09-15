@@ -1,9 +1,7 @@
 // src/product/product.model.ts
 import { model, Schema } from 'mongoose';
 import { IProduct, IProductModel } from './product.interface';
-
-const CATEGORIES = ['Fruits', 'Vegetables', 'Dairy', 'Bakery', 'Meat'] as const;
-
+const CATEGORIES = ['Fruits', 'Vegetables', 'Dessert', 'Meat'] as const;
 const productSchema = new Schema<IProduct>(
   {
     title: {

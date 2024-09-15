@@ -12,12 +12,16 @@ const createProductInDB = async (product: IProduct) => {
   return result;
 };
 
-const getAllProductsFromDB = async (filter: Record<string, any>) => {
-  const products = await Product.find(filter);
-  if (!products.length) {
-    throw new Error('Product not found');
-  }
-  return products;
+const getAllProductsFromDB = async (
+  filter: Record<string, any>,
+  page: number,
+  limit: number,
+) => {
+  const skip = (page - 1) * limit;
+  const products = await Product.find(filter).skip(skip).limit(limit);
+
+  const totalProducts = await Product.countDocuments(filter); // Get the total count for pagination
+  return { products, totalProducts };
 };
 
 const getSingleProductFromDB = async (id: string) => {

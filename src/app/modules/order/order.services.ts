@@ -44,14 +44,12 @@ const createOrderInDB = async (orderData: IOrder, payload: JwtPayload) => {
   return order;
 };
 
-const getAllOrdersFromDB = async (email?: string | undefined) => {
-  const result = email
-    ? await Order.find({ email }) // Retrieve All Orders
-    : await Order.find({}); // or Retrieve Orders by User Email
+const getAllOrdersFromDB = async () => {
+  const result = await Order.find({})
+    .populate('products.productId')
+    .populate('user');
   if (result.length === 0) {
-    throw new Error(
-      email ? 'Orders not found for the provided email' : 'Orders not found',
-    );
+    throw new AppError(httpStatus.NOT_FOUND, 'No Order Found');
   }
   return result;
 };

@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-const CATEGORIES = ['Fruits', 'Vegetables', 'Dairy', 'Bakery', 'Meat'] as const;
+const CATEGORIES = ['Fruits', 'Vegetables', 'Dessert', 'Meat'] as const;
 export interface IProduct {
   title: string;
   description: string;

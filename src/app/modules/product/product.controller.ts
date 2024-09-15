@@ -18,36 +18,44 @@ const createProduct = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllProducts = catchAsync(async (req: Request, res: Response) => {
-  const { searchTerm, category, isFlashSale, isPopular } = req.query;
+  const {
+    searchTerm,
+    category,
+    isFlashSale,
+    isPopular,
+    priceMin,
+    priceMax,
+    rating,
+    page = 1,
+    limit = 10,
+  } = req.query;
 
-  // Construct the message
   const message = searchTerm
     ? `Products matching search term '${searchTerm}' fetched successfully!`
     : 'Products fetched successfully!';
 
-  // Build the filter object
   const filter: Record<string, any> = {};
 
-  if (searchTerm) {
-    filter.$text = { $search: searchTerm };
-  }
-  if (category) {
-    filter.category = category;
-  }
-  if (isFlashSale !== undefined) {
-    filter.isFlashSale = isFlashSale === 'true'; // Convert to boolean
-  }
-  if (isPopular !== undefined) {
-    filter.isPopular = isPopular === 'true'; // Convert to boolean
-  }
+  if (searchTerm) filter.$text = { $search: searchTerm };
+  if (category) filter.category = category;
+  if (isFlashSale !== undefined) filter.isFlashSale = isFlashSale === 'true';
+  if (isPopular !== undefined) filter.isPopular = isPopular === 'true';
+  if (priceMin !== undefined) filter.price = { $gte: +priceMin };
+  if (priceMax !== undefined)
+    filter.price = { ...filter.price, $lte: +priceMax };
+  if (rating !== undefined) filter.rating = { $gte: +rating }; // Rating filter
 
-  // Retrieve products based on the filter
-  const result = await ProductServices.getAllProductsFromDB(filter);
-  sendResponse(res, {
+  const { products, totalProducts } =
+    await ProductServices.getAllProductsFromDB(filter, +page, +limit);
+
+  res.status(201).json({
     success: true,
     statusCode: httpStatus.OK,
     message,
-    data: result,
+    data: products,
+    totalProducts,
+    totalPages: Math.ceil(totalProducts / +limit),
+    currentPage: +page,
   });
 });
 
