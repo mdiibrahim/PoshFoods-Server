@@ -18,7 +18,10 @@ const getAllProductsFromDB = async (
   limit: number,
 ) => {
   const skip = (page - 1) * limit;
-  const products = await Product.find(filter).skip(skip).limit(limit);
+  const products = await Product.find(filter)
+    .skip(skip)
+    .limit(limit)
+    .select('+_id');
 
   const totalProducts = await Product.countDocuments(filter); // Get the total count for pagination
   return { products, totalProducts };
