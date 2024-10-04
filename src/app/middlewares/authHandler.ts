@@ -26,7 +26,13 @@ const auth = (...requiredRoles: IRole[]) => {
         token,
         config.jwt_access_secret as string,
       ) as JwtPayload;
-      const { role, email } = decoded;
+
+      const { role, email, exp } = decoded;
+
+      // Optionally check if the token has expired
+      if (exp && Date.now() >= exp * 1000) {
+        throw new AppError(httpStatus.UNAUTHORIZED, 'Token has expired');
+      }
 
       // Find the user by their email
       const user = await User.isUserExists(email);
@@ -46,7 +52,10 @@ const auth = (...requiredRoles: IRole[]) => {
       req.user = decoded as JwtPayload;
       next(); // Call the next middleware
     } catch (error) {
-      // If token verification fails
+      // If token verification fails, log the error
+      console.error('Authentication Error:', error);
+
+      // Return the error to the client
       throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid or expired token');
     }
   });

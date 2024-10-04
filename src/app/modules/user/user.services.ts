@@ -24,7 +24,24 @@ const getAUserDetailsFromDB = async (payload: JwtPayload) => {
   return result;
 };
 
+const updateUserProfileInDB = async (
+  payload: JwtPayload,
+  updateData: Partial<IUser>,
+): Promise<IUser | null> => {
+  const { _id } = payload;
+  const result = await User.findById(_id);
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, 'No User Found');
+  }
+  const updatedUser = await User.findByIdAndUpdate(_id, updateData, {
+    new: true,
+  });
+
+  return updatedUser;
+};
+
 export const UserServices = {
   createUserInDB,
   getAUserDetailsFromDB,
+  updateUserProfileInDB,
 };

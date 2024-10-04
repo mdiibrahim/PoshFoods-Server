@@ -19,7 +19,12 @@ export const SignUpUserValidationSchema = z.object({
     .optional(),
   address: z.string().min(1, 'Address is required.'),
 });
-
+const updateProfileValidationSchema = SignUpUserValidationSchema.omit({
+  email: true,
+  password: true,
+  role: true,
+}).partial();
 export const UserValidation = {
   SignUpUserValidationSchema,
+  updateProfileValidationSchema,
 };
